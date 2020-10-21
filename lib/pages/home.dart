@@ -15,6 +15,7 @@ class _HomePageState extends State<HomePage> {
   var _recognitions;
   bool _isLoading = false;
   final picker = ImagePicker();
+  PanelController _panelController = new PanelController();
 
   Future loadModel() async {
     Tflite.close();
@@ -51,6 +52,10 @@ class _HomePageState extends State<HomePage> {
       _isLoading = false;
       _recognitions = recognitions;
     });
+
+    if (_recognitions != null) {
+      _panelController.open();
+    }
   }
 
   selectFromGallery() async {
@@ -85,6 +90,7 @@ class _HomePageState extends State<HomePage> {
 
     return Scaffold(
       body: SlidingUpPanel(
+        controller: _panelController,
         minHeight: 30,
         maxHeight: 100,
         boxShadow: [
@@ -100,13 +106,18 @@ class _HomePageState extends State<HomePage> {
         panel: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(
-              height: 5,
-            ),
             Center(
-              child: Icon(
-                Icons.arrow_drop_up,
-                color: Colors.orange,
+              child: IconButton(
+                padding: EdgeInsets.all(0),
+                onPressed: () {
+                  _panelController.isPanelOpen
+                      ? _panelController.close()
+                      : _panelController.open();
+                },
+                icon: Icon(
+                  Icons.arrow_drop_up,
+                  color: Colors.orange,
+                ),
               ),
             ),
             _recognitions != null
