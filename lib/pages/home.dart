@@ -106,15 +106,17 @@ class _HomePageState extends State<HomePage> {
         panel: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            SizedBox(
+              height: 5,
+            ),
             Center(
-              child: IconButton(
-                padding: EdgeInsets.all(0),
-                onPressed: () {
+              child: GestureDetector(
+                onTap: () {
                   _panelController.isPanelOpen
                       ? _panelController.close()
                       : _panelController.open();
                 },
-                icon: Icon(
+                child: Icon(
                   Icons.arrow_drop_up,
                   color: Colors.orange,
                 ),
