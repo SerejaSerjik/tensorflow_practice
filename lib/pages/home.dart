@@ -21,8 +21,8 @@ class _HomePageState extends State<HomePage> {
     String res;
     try {
       res = await Tflite.loadModel(
-        model: "assets/tflite/mobilenet_v1_1.0_224_quant.tflite",
-        labels: "assets/tflite/labels_mobilenet_quant_v1_224.txt",
+        model: "assets/tflite/mobilenet.tflite",
+        labels: "assets/tflite/labels.txt",
       );
       print("loadModel res: $res");
     } catch (e) {
@@ -42,7 +42,7 @@ class _HomePageState extends State<HomePage> {
         numResults: 3,
       );
     } catch (e) {
-      print("Error while recogniting image");
+      print("Error while recognizing image");
     }
 
     print("predict recognitions: $recognitions");
@@ -98,35 +98,33 @@ class _HomePageState extends State<HomePage> {
           topRight: Radius.circular(40),
         ),
         panel: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(
               height: 5,
             ),
-            Icon(
-              Icons.arrow_drop_up,
-              color: Colors.orange,
+            Center(
+              child: Icon(
+                Icons.arrow_drop_up,
+                color: Colors.orange,
+              ),
             ),
-            Row(
-              children: [
-                _recognitions != null
-                    ? Text(_recognitions[0]['label'])
-                    : SizedBox.shrink(),
-              ],
-            ),
-            Row(
-              children: [
-                _recognitions != null
-                    ? Text(_recognitions[1]['label'])
-                    : SizedBox.shrink(),
-              ],
-            ),
-            Row(
-              children: [
-                _recognitions != null
-                    ? Text(_recognitions[2]['label'])
-                    : SizedBox.shrink(),
-              ],
-            ),
+            _recognitions != null
+                ? Padding(
+                    padding: const EdgeInsets.only(left: 15, top: 10),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.max,
+                      children: [
+                        Text("Object: " + _recognitions[0]['label']),
+                        Text(
+                          "Confidence: " +
+                              _recognitions[0]['confidence'].toStringAsFixed(3),
+                        ),
+                      ],
+                    ),
+                  )
+                : SizedBox(height: 40),
           ],
         ),
         body: Stack(
