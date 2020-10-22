@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:tflite/tflite.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 class ClassificationPage extends StatefulWidget {
@@ -12,7 +11,7 @@ class ClassificationPage extends StatefulWidget {
 
 class _ClassificationPageState extends State<ClassificationPage> {
   File _image;
-  var _recognitions = [];
+  List _recognitions = [];
   bool _isLoading = false;
   final picker = ImagePicker();
   PanelController _panelController = new PanelController();
@@ -46,7 +45,7 @@ class _ClassificationPageState extends State<ClassificationPage> {
   Future predict(File image) async {
     print("predict is running");
 
-    var recognitions;
+    List recognitions;
     try {
       recognitions = await Tflite.runModelOnImage(
         path: image.path,
@@ -158,6 +157,13 @@ class _ClassificationPageState extends State<ClassificationPage> {
         ),
         body: Scaffold(
           appBar: AppBar(
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back),
+              onPressed: () {
+                Tflite.close();
+                Navigator.of(context).pop();
+              },
+            ),
             iconTheme: IconThemeData(color: Colors.white),
             title: Text(
               "Image Classification",
@@ -172,7 +178,7 @@ class _ClassificationPageState extends State<ClassificationPage> {
             color: Colors.white,
             child: _image == null
                 ? Center(
-                    child: Text("Upload an image to recognize objects"),
+                    child: Text("Upload an image to classify it"),
                   )
                 : _isLoading == true
                     ? Center(

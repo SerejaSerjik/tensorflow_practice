@@ -7,7 +7,7 @@ class HomePage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          "Tensorflow Lite",
+          "TFL Examples",
           style: TextStyle(
             color: Colors.white,
           ),
@@ -29,6 +29,11 @@ class HomePage extends StatelessWidget {
                 context,
                 text: "Image Detection",
                 routeWidget: DetectionPage(),
+              ),
+              _buildRaisedButton(
+                context,
+                text: "Pose Detection",
+                routeWidget: PoseNetPage(),
               ),
               _buildRaisedButton(
                 context,

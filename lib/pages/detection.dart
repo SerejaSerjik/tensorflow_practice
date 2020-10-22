@@ -11,8 +11,10 @@ class DetectionPage extends StatefulWidget {
 
 class _DetectionPageState extends State<DetectionPage> {
   File _image;
-  var _recognitions = [];
+  List _recognitions = [];
   bool _isLoading = false;
+  double _imageWidth;
+  double _imageHeight;
   final picker = ImagePicker();
 
   @override
@@ -32,7 +34,7 @@ class _DetectionPageState extends State<DetectionPage> {
     String res;
     try {
       res = await Tflite.loadModel(
-        model: "assets/tflite/ssd_mobilenet.tflite",
+        model: "assets/tflite/ssd_mobilenet_v1_1_metadata_1.tflite",
         labels: "assets/tflite/ssd_mobilenet.txt",
       );
       print("loadModel res: $res");
@@ -41,10 +43,129 @@ class _DetectionPageState extends State<DetectionPage> {
     }
   }
 
+  Future predict(File image) async {
+    print("predict is running");
+
+    List recognitions;
+    try {
+      recognitions = await Tflite.detectObjectOnImage(
+        path: image.path,
+        numResultsPerClass: 1,
+      );
+    } catch (e) {
+      print("Error while recognizing image");
+    }
+
+    print("predict recognitions: $recognitions");
+
+    FileImage(image).resolve(ImageConfiguration()).addListener(
+          (ImageStreamListener(
+            (ImageInfo info, bool _) {
+              setState(() {
+                _imageWidth = info.image.width.toDouble();
+                _imageHeight = info.image.height.toDouble();
+              });
+            },
+          )),
+        );
+
+    setState(() {
+      _recognitions = recognitions;
+    });
+  }
+
+  selectFromGallery() async {
+    var pickedFile = await picker.getImage(source: ImageSource.gallery);
+    if (pickedFile == null) return;
+    setState(() {
+      _isLoading = true;
+      if (pickedFile != null) {
+        _image = File(pickedFile.path);
+      } else {
+        print('No image selected.');
+      }
+      _isLoading = false;
+    });
+    await predict(_image);
+  }
+
+  List<Widget> renderBoxes(Size screen) {
+    if (_recognitions == null) return [];
+    if (_imageWidth == null || _imageHeight == null) return [];
+
+    double factorX = screen.width;
+    double factorY = _imageHeight / _imageHeight * screen.width;
+
+    return _recognitions.map((re) {
+      if ((re["confidenceInClass"] * 100) > 35) {
+        return Positioned(
+          left: re["rect"]["x"] * factorX,
+          top: re["rect"]["y"] * factorY,
+          width: re["rect"]["w"] * factorX,
+          height: re["rect"]["h"] * factorY,
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: Colors.red,
+                width: 3,
+              ),
+            ),
+            child: Text(
+              "${re["detectedClass"]} ${(re["confidenceInClass"] * 100).toStringAsFixed(0)}%",
+              style: TextStyle(
+                background: Paint()..color = Colors.red,
+                color: Colors.white,
+                fontSize: 15,
+              ),
+            ),
+          ),
+        );
+      } else {
+        return Container();
+      }
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
+    Size size = MediaQuery.of(context).size;
+
+    List<Widget> stackChildren = [];
+
+    stackChildren.add(
+      _image == null
+          ? Center(child: Text("Upload image to recognize objects on it"))
+          : Container(
+              width: double.infinity,
+              height: double.infinity,
+              color: Colors.white,
+              child: Image.file(
+                _image,
+                fit: BoxFit.fitWidth,
+                height: double.infinity,
+                width: double.infinity,
+                alignment: Alignment.topCenter,
+              ),
+            ),
+    );
+
+    stackChildren.addAll(renderBoxes(size));
+
+    if (_isLoading) {
+      stackChildren.add(Center(
+        child: CircularProgressIndicator(),
+      ));
+    }
+
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Tflite.close();
+            Navigator.of(context).pop();
+          },
+        ),
         iconTheme: IconThemeData(color: Colors.white),
         title: Text(
           "Image Detection",
@@ -53,7 +174,9 @@ class _DetectionPageState extends State<DetectionPage> {
           ),
         ),
       ),
-      body: Container(),
+      body: Stack(
+        children: stackChildren,
+      ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.orange,
         child: Icon(
@@ -61,7 +184,9 @@ class _DetectionPageState extends State<DetectionPage> {
           color: Colors.white,
         ),
         tooltip: "Pick image from Gallery",
-        onPressed: () {},
+        onPressed: () {
+          selectFromGallery();
+        },
       ),
     );
   }

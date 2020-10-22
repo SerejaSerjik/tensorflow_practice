@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tflite/tflite.dart';
 
 class Pix2PixPage extends StatefulWidget {
   @override
@@ -10,6 +11,13 @@ class _Pix2PixPageState extends State<Pix2PixPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Tflite.close();
+            Navigator.of(context).pop();
+          },
+        ),
         iconTheme: IconThemeData(color: Colors.white),
         title: Text(
           "Pix2Pix",
