@@ -37,7 +37,7 @@ class HomePage extends StatelessWidget {
               ),
               _buildRaisedButton(
                 context,
-                text: "Pix2Pix",
+                text: "Edges2Cats",
                 routeWidget: Pix2PixPage(),
               ),
             ],

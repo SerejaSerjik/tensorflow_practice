@@ -17,6 +17,9 @@ class MyApp extends StatelessWidget {
         accentColor: Colors.orange,
         primarySwatch: Colors.orange,
         buttonColor: Colors.orange,
+        floatingActionButtonTheme: FloatingActionButtonThemeData(
+          foregroundColor: Colors.white,
+        ),
       ),
       home: HomePage(),
     );
